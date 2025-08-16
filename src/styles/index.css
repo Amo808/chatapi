@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-divider;
+  }
+  
+  body {
+    @apply bg-bg-very-dark text-text font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  .chat-bubble {
+    @apply max-w-[80%] rounded-xl px-4 py-3 shadow-sm;
+  }
+  
+  .chat-bubble-user {
+    @apply bg-accent text-white ml-auto;
+  }
+  
+  .chat-bubble-assistant {
+    @apply bg-surface text-text;
+  }
+  
+  .sidebar-item {
+    @apply flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted hover:bg-surface hover:text-text transition-colors cursor-pointer;
+  }
+  
+  .sidebar-item.active {
+    @apply bg-surface text-text;
+  }
+  
+  .btn-primary {
+    @apply bg-accent hover:bg-accent-dark text-white px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-bg-very-dark;
+  }
+  
+  .btn-secondary {
+    @apply bg-surface hover:bg-accent-dark/20 text-text px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-bg-very-dark;
+  }
+  
+  .input-field {
+    @apply bg-surface border border-divider rounded-lg px-4 py-3 text-text placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-surface;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-accent rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-accent-dark;
+}
