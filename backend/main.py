@@ -1,7 +1,6 @@
 import os
 import json
 import asyncio
-from contextlib import asynccontextmanager
 from typing import List, Dict, Any, Optional
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import StreamingResponse, JSONResponse, RedirectResponse, FileResponse
@@ -26,26 +25,26 @@ token_estimator = TokenEstimator()
 history_store = HistoryStore()
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Инициализация при старте
+app = FastAPI(
+    title="Multi-Provider AI Chat API",
+    description="Unified API for multiple AI providers with model switching",
+    version="2.0.0"
+)
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Инициализация при старте"""
     global provider_manager
     provider_manager = ProviderManager()
     print("🤖 Multi-provider AI Chat API started")
     print(f"📡 Available providers: {', '.join(provider_manager.get_available_providers())}")
-    
-    yield
-    
-    # Очистка при выходе
+
+
+@app.on_event("shutdown") 
+async def shutdown_event():
+    """Очистка при выходе"""
     print("👋 Shutting down...")
-
-
-app = FastAPI(
-    title="Multi-Provider AI Chat API",
-    description="Unified API for multiple AI providers with model switching",
-    version="2.0.0",
-    lifespan=lifespan
-)
 
 # CORS настройки
 app.add_middleware(

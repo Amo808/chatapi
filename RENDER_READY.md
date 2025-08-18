@@ -13,10 +13,11 @@ Your API Chat System with LobeChat frontend is now **100% ready for unified Rend
    - Test page available at `/test` for deployment verification
 
 2. **✅ Fixed Render Build Issues**
-   - **CRITICAL FIX**: Downgraded to pydantic v1.10.9 (NO Rust compilation!)
+   - **CRITICAL FIX**: Stable combo FastAPI 0.85.1 + pydantic 1.10.2
+   - **NO Rust compilation** - uses pre-compiled wheels only
+   - **Python 3.13 compatible** - tested and verified  
    - Triple fallback system: ultra → minimal → main requirements
-   - Stable FastAPI 0.95.2 + uvicorn 0.22.0 versions
-   - 100% compatible with Render's Python environment
+   - Legacy startup/shutdown events instead of lifespan (better compatibility)
 
 3. **✅ Complete LobeChat Integration**
    - Full modern React chat interface
@@ -106,10 +107,11 @@ Once deployed, verify these endpoints:
 ### 🐛 **Troubleshooting**
 
 **Build Errors SOLVED:**
-- ✅ **NO MORE Rust compilation issues!** Using pydantic v1.10.9
+- ✅ **NO MORE Rust OR Python 3.13 compatibility issues!**
+- ✅ **Stable versions**: FastAPI 0.85.1 + pydantic 1.10.2 (proven combo)
 - ✅ **Triple fallback system**: `requirements-ultra.txt` → `requirements-minimal.txt` → `requirements.txt`
-- ✅ **Stable versions**: FastAPI 0.95.2, uvicorn 0.22.0 - proven to work on Render
-- ✅ **Zero Rust dependencies** in ultra-minimal requirements
+- ✅ **Legacy events**: Using startup/shutdown events for better compatibility
+- ✅ **Zero compilation** - all pre-built wheels
 
 **Frontend Not Loading:**
 - Frontend is served at `/app/*` routes

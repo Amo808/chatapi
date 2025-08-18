@@ -29,10 +29,12 @@ def check_requirements():
     if req_ultra:
         with open("requirements-ultra.txt", 'r', encoding='utf-8') as f:
             content = f.read()
-            if "pydantic==1.10.9" in content:
-                print("✅ Pydantic v1 (no Rust required)")
-            if "uvicorn==0.22.0" in content:
-                print("✅ Stable uvicorn version")
+            if "pydantic==1.10.2" in content:
+                print("✅ Pydantic v1.10.2 (stable, no Rust)")
+            if "fastapi==0.85.1" in content:
+                print("✅ FastAPI 0.85.1 (proven stable)")
+            if "uvicorn==0.20.0" in content:
+                print("✅ Uvicorn 0.20.0 (compatible)")
                 
     if req_minimal:
         print("✅ Fallback requirements available")
