@@ -55,7 +55,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Настройка статических файлов для фронтенда
+# Настройка статических файлов
+static_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
+if os.path.exists(static_path):
+    app.mount("/static", StaticFiles(directory=static_path), name="static")
+    print(f"📁 Serving static files from: {static_path}")
+else:
+    print(f"⚠️  Static directory not found at: {static_path}")
+
+# Проверяем фронтенд dist 
 frontend_dist_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "dist")
 if os.path.exists(frontend_dist_path):
     app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist_path, "assets")), name="assets")
@@ -321,16 +329,34 @@ async def delete_history(conversation_id: str):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@app.get("/app")
+async def serve_chat_ui():
+    """Служить основной чат интерфейс"""
+    static_index = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "index.html")
+    if os.path.exists(static_index):
+        return FileResponse(static_index, media_type="text/html")
+    else:
+        return JSONResponse(
+            status_code=404,
+            content={"error": "Chat UI not found. Static files missing."}
+        )
+
 @app.get("/app/{full_path:path}")
 async def serve_frontend_app(full_path: str):
     """Служить фронтенд приложение для всех маршрутов /app/*"""
+    # Сначала пробуем наш простой UI
+    static_index = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "index.html")
+    if os.path.exists(static_index):
+        return FileResponse(static_index, media_type="text/html")
+    
+    # Потом пробуем сложный фронтенд
     frontend_index = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "dist", "index.html")
     if os.path.exists(frontend_index):
         return FileResponse(frontend_index)
     else:
         return JSONResponse(
             status_code=404, 
-            content={"error": "Frontend not built. Run 'npm run build' in frontend directory."}
+            content={"error": "Frontend not built. Using fallback chat interface at /app"}
         )
 
 
