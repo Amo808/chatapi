@@ -4,9 +4,17 @@ services:
     name: api-chat-system
     runtime: python3
     buildCommand: |
+      # Install Python dependencies
       pip install --upgrade pip
       pip install -r requirements-ultra.txt || pip install -r requirements-minimal.txt || pip install -r requirements.txt
-      cd frontend && npm install && npm run build:export || echo "Frontend build failed - API will still work"
+      
+      # Install Node.js (required for Next.js build)
+      curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+      sudo apt-get install -y nodejs
+      node --version && npm --version
+      
+      # Build frontend with legacy peer deps to handle React 19 conflicts
+      cd frontend && npm install --legacy-peer-deps && npm run build:export || echo "Frontend build failed - API will still work"
       ls -la frontend/out/ || echo "Next.js export directory not found"
       ls -la frontend/ || echo "Frontend directory listing failed"
     startCommand: python -m uvicorn backend.main:app --host 0.0.0.0 --port $PORT
