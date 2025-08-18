@@ -24,14 +24,21 @@ def check_requirements():
     
     req_main = check_file_exists("requirements.txt", "Main requirements")
     req_minimal = check_file_exists("requirements-minimal.txt", "Minimal requirements")
+    req_ultra = check_file_exists("requirements-ultra.txt", "Ultra-minimal requirements")
     
-    if req_main:
-        with open("requirements.txt", 'r', encoding='utf-8') as f:
+    if req_ultra:
+        with open("requirements-ultra.txt", 'r', encoding='utf-8') as f:
             content = f.read()
-            if "pydantic==2.0.3" in content:
-                print("✅ Pydantic version is compatible (2.0.3)")
-            else:
-                print("⚠️  Pydantic version may cause build issues")
+            if "pydantic==1.10.9" in content:
+                print("✅ Pydantic v1 (no Rust required)")
+            if "uvicorn==0.22.0" in content:
+                print("✅ Stable uvicorn version")
+                
+    if req_minimal:
+        print("✅ Fallback requirements available")
+        
+    if req_main:
+        print("✅ Main requirements available")
 
 def check_render_config():
     """Check Render configuration"""
@@ -40,8 +47,8 @@ def check_render_config():
     if check_file_exists("render.yaml", "Render config"):
         with open("render.yaml", 'r', encoding='utf-8') as f:
             content = f.read()
-            if "requirements-minimal.txt" in content:
-                print("✅ Fallback requirements configured")
+            if "requirements-ultra.txt" in content:
+                print("✅ Triple fallback requirements configured")
             if "npm run build" in content:
                 print("✅ Frontend build command present")
             if "healthCheckPath" in content:

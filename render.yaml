@@ -1,11 +1,11 @@
 services:
-  # Unified Full-Stack Service
+  # Unified Full-Stack Service with Triple Fallback
   - type: web
     name: api-chat-system
     runtime: python3
     buildCommand: |
       pip install --upgrade pip
-      pip install -r requirements-minimal.txt || pip install -r requirements.txt
+      pip install -r requirements-ultra.txt || pip install -r requirements-minimal.txt || pip install -r requirements.txt
       cd frontend
       npm install
       npm run build

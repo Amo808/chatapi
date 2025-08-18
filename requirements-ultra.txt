@@ -1,5 +1,6 @@
+# Ultra-minimal dependencies for Render (NO Rust compilation)
 fastapi==0.95.2
-uvicorn[standard]==0.22.0
+uvicorn==0.22.0
 python-multipart==0.0.6
 python-dotenv==1.0.0
 pydantic==1.10.9
