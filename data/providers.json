@@ -1,0 +1,43 @@
+{
+  "deepseek": {
+    "enabled": true,
+    "api_key": "",
+    "base_url": "https://api.deepseek.com",
+    "models": {
+      "deepseek-chat": {
+        "enabled": true
+      },
+      "deepseek-reasoner": {
+        "enabled": true
+      },
+      "deepseek-coder": {
+        "enabled": true
+      }
+    }
+  },
+  "openai": {
+    "enabled": false,
+    "api_key": "",
+    "base_url": "https://api.openai.com",
+    "models": {
+      "gpt-4o": {
+        "enabled": true
+      },
+      "gpt-4o-mini": {
+        "enabled": true
+      },
+      "gpt-4-turbo": {
+        "enabled": false
+      },
+      "gpt-3.5-turbo": {
+        "enabled": false
+      },
+      "o1": {
+        "enabled": false
+      },
+      "o1-mini": {
+        "enabled": false
+      }
+    }
+  }
+}

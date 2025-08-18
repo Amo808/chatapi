@@ -1,0 +1,10 @@
+/project-root
+  /frontend
+  /backend
+  /adapters
+  /storage
+  /data
+    config.json
+    history.jsonl
+  /logs
+  README.md

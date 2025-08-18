@@ -1,0 +1,5 @@
+# AI Chat History
+# Каждая строка - это отдельное сообщение в формате JSON
+# Пример:
+# {"id": "msg_001", "session_id": "chat_001", "timestamp": 1692187200, "role": "user", "content": "Привет!", "tokens": {"input": 5}}
+# {"id": "msg_002", "session_id": "chat_001", "timestamp": 1692187205, "role": "assistant", "content": "Привет! Как дела?", "model": "deepseek-chat", "tokens": {"input": 5, "output": 12}}

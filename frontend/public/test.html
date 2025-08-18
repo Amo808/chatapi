@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat - Тест</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2563eb;
+            text-align: center;
+        }
+        .status {
+            padding: 10px;
+            background: #dcfce7;
+            border: 1px solid #bbf7d0;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .error {
+            background: #fee2e2;
+            border-color: #fecaca;
+            color: #dc2626;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Chat - Статический тест</h1>
+        
+        <div class="status" id="status">
+            ✅ HTML страница загружается корректно
+        </div>
+        
+        <button onclick="testBackend()">Тест Backend API</button>
+        <button onclick="testReactBuild()">Тест React Build</button>
+        
+        <div id="results"></div>
+        
+        <h3>Инструкции:</h3>
+        <ol>
+            <li>Если вы видите эту страницу - Vite сервер работает</li>
+            <li>Нажмите "Тест Backend API" для проверки подключения к серверу</li>
+            <li>Нажмите "Тест React Build" для проверки сборки React</li>
+        </ol>
+    </div>
+
+    <script>
+        async function testBackend() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<div class="status">Проверка Backend...</div>';
+            
+            try {
+                const response = await fetch('/api/health');
+                if (response.ok) {
+                    const data = await response.json();
+                    results.innerHTML = '<div class="status">✅ Backend работает: ' + JSON.stringify(data) + '</div>';
+                } else {
+                    results.innerHTML = '<div class="status error">❌ Backend ошибка: ' + response.status + '</div>';
+                }
+            } catch (error) {
+                results.innerHTML = '<div class="status error">❌ Backend недоступен: ' + error.message + '</div>';
+            }
+        }
+        
+        function testReactBuild() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<div class="status">Переходим на React версию...</div>';
+            
+            // Перенаправляем на React приложение
+            setTimeout(() => {
+                window.location.href = '/src/main.jsx';
+            }, 1000);
+        }
+        
+        // Автоматический тест при загрузке
+        window.onload = () => {
+            console.log('Статический HTML загружен успешно');
+            testBackend();
+        };
+    </script>
+</body>
+</html>

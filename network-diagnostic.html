@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🔍 Диагностика сети - API Chat</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            margin: 20px; 
+            background: #f5f5f5; 
+            line-height: 1.6;
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+        }
+        .status { 
+            padding: 15px; 
+            margin: 15px 0; 
+            border-radius: 8px; 
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; border-left: 4px solid #28a745; }
+        .error { background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
+        .warning { background: #fff3cd; color: #856404; border-left: 4px solid #ffc107; }
+        .info { background: #d1ecf1; color: #0c5460; border-left: 4px solid #17a2b8; }
+        
+        button { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 12px 24px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            margin: 8px;
+            font-size: 14px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        
+        .test-result { 
+            background: #f8f9fa; 
+            border: 1px solid #dee2e6; 
+            border-radius: 6px; 
+            padding: 15px; 
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        
+        pre { 
+            background: #343a40; 
+            color: #f8f9fa; 
+            padding: 15px; 
+            border-radius: 6px; 
+            overflow-x: auto; 
+            font-size: 12px;
+        }
+        
+        .ip-info { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .instructions { 
+            background: #e3f2fd; 
+            border: 1px solid #bbdefb; 
+            padding: 20px; 
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .step { 
+            background: white; 
+            border: 1px solid #dee2e6; 
+            border-radius: 6px; 
+            padding: 15px; 
+            margin: 10px 0;
+        }
+        
+        .step-number { 
+            background: #007bff; 
+            color: white; 
+            width: 24px; 
+            height: 24px; 
+            border-radius: 50%; 
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center; 
+            margin-right: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Диагностика сети API Chat</h1>
+        
+        <div class="ip-info">
+            <h2>📡 Информация о сервере</h2>
+            <p>IP адрес: <strong>192.168.110.143</strong></p>
+            <p>Frontend: <strong>порт 3010</strong></p>
+            <p>Backend: <strong>порт 8000</strong></p>
+            <p>Тест: <strong>порт 9999</strong></p>
+        </div>
+
+        <div class="instructions">
+            <h3>📱 Инструкция для диагностики</h3>
+            <p><strong>Откройте эту страницу на ДРУГОМ устройстве</strong> (телефон, планшет, другой ПК) и выполните тесты ниже:</p>
+        </div>
+
+        <div class="step">
+            <span class="step-number">1</span>
+            <strong>Автоматический тест подключения</strong>
+            <div style="margin-top: 10px;">
+                <button onclick="runAllTests()">🚀 Запустить все тесты</button>
+                <button onclick="clearResults()">🧹 Очистить результаты</button>
+            </div>
+        </div>
+
+        <div class="step">
+            <span class="step-number">2</span>
+            <strong>Ручное тестирование</strong>
+            <div style="margin-top: 10px;">
+                <button onclick="testSimpleServer()">Тест сервер (9999)</button>
+                <button onclick="testMainApp()">Основное приложение (3010)</button>
+                <button onclick="testBackend()">Backend API (8000)</button>
+            </div>
+        </div>
+
+        <div id="results"></div>
+
+        <div class="instructions">
+            <h3>🛠️ Если тесты не работают</h3>
+            
+            <div class="step">
+                <span class="step-number">3</span>
+                <strong>Проверьте сеть командами:</strong>
+                
+                <h4>Windows (командная строка):</h4>
+                <pre>ping 192.168.110.143
+telnet 192.168.110.143 3010</pre>
+
+                <h4>PowerShell:</h4>
+                <pre>Test-NetConnection -ComputerName 192.168.110.143 -Port 3010</pre>
+
+                <h4>Android (приложение Termux):</h4>
+                <pre>ping -c 4 192.168.110.143
+nc -zv 192.168.110.143 3010</pre>
+            </div>
+
+            <div class="step">
+                <span class="step-number">4</span>
+                <strong>Типичные проблемы:</strong>
+                <ul>
+                    <li><strong>AP Isolation</strong> на роутере - отключите в настройках WiFi</li>
+                    <li><strong>Guest network</strong> - переключитесь на основную сеть</li>
+                    <li><strong>Антивирус</strong> - временно отключите на сервере</li>
+                    <li><strong>Разные подсети</strong> - убедитесь что оба устройства в 192.168.110.x</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="status info">
+            <strong>💡 Подсказка:</strong> Если вы видите эту страницу с другого устройства, значит базовое сетевое подключение работает!
+        </div>
+    </div>
+
+    <script>
+        function addResult(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = `${new Date().toLocaleTimeString()}: ${message}`;
+            results.appendChild(div);
+            results.scrollTop = results.scrollHeight;
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        async function testConnection(url, name, timeout = 10000) {
+            addResult(`🔄 Тестирую ${name}: ${url}`, 'info');
+            
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), timeout);
+                
+                const response = await fetch(url, {
+                    method: 'HEAD',
+                    signal: controller.signal,
+                    mode: 'no-cors'
+                });
+                
+                clearTimeout(timeoutId);
+                addResult(`✅ ${name} - подключение успешно`, 'success');
+                return true;
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    addResult(`❌ ${name} - превышено время ожидания (${timeout/1000}с)`, 'error');
+                } else {
+                    addResult(`❌ ${name} - ошибка: ${error.message}`, 'error');
+                }
+                return false;
+            }
+        }
+
+        async function testSimpleServer() {
+            return await testConnection('http://192.168.110.143:9999', 'Простой тестовый сервер');
+        }
+
+        async function testMainApp() {
+            return await testConnection('http://192.168.110.143:3010', 'Основное приложение');
+        }
+
+        async function testBackend() {
+            return await testConnection('http://192.168.110.143:8000', 'Backend API');
+        }
+
+        async function runAllTests() {
+            clearResults();
+            addResult('🎯 Начинаю комплексную диагностику...', 'info');
+            
+            // Определяем устройство и браузер
+            const userAgent = navigator.userAgent;
+            const deviceInfo = {
+                platform: navigator.platform,
+                userAgent: userAgent,
+                mobile: /Mobile|Android|iPhone|iPad/.test(userAgent)
+            };
+            
+            addResult(`📱 Устройство: ${deviceInfo.platform} ${deviceInfo.mobile ? '(мобильное)' : '(десктоп)'}`, 'info');
+            
+            // Тестируем подключения
+            const results = {
+                simple: await testSimpleServer(),
+                main: await testMainApp(),
+                backend: await testBackend()
+            };
+            
+            // Анализ результатов
+            addResult('📊 Анализ результатов:', 'info');
+            
+            if (!results.simple && !results.main && !results.backend) {
+                addResult('🔴 Все тесты провалились - проблема в сети или роутере', 'error');
+                addResult('💡 Решение: проверьте AP Isolation в настройках роутера', 'warning');
+            } else if (results.simple && !results.main) {
+                addResult('🟡 Сеть работает, но Node.js блокируется', 'warning');
+                addResult('💡 Решение: отключите антивирус или добавьте Node.js в исключения', 'warning');
+            } else if (results.simple && results.main) {
+                addResult('🟢 Все работает отлично!', 'success');
+                addResult('🎉 Можете использовать основное приложение', 'success');
+            } else {
+                addResult('🟡 Частичная работоспособность - проверьте настройки', 'warning');
+            }
+        }
+
+        // Автоматический запуск при загрузке страницы
+        window.addEventListener('load', () => {
+            addResult('🌐 Страница загружена успешно', 'success');
+            addResult('📱 Если вы видите это сообщение с другого устройства - базовая сеть работает', 'info');
+            
+            // Показываем информацию об устройстве
+            const deviceInfo = `${navigator.platform} - ${navigator.userAgent.includes('Mobile') ? 'Мобильное' : 'Десктоп'}`;
+            addResult(`🔍 Ваше устройство: ${deviceInfo}`, 'info');
+        });
+    </script>
+</body>
+</html>

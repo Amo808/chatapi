@@ -1,0 +1,32 @@
+{
+  "addToKnowledgeBase": {
+    "addSuccess": "File added successfully, <1>view now</1>",
+    "confirm": "Add",
+    "id": {
+      "placeholder": "Please select a document collection to add",
+      "required": "Please select a document collection",
+      "title": "Target Document Collection"
+    },
+    "title": "Add to Document Collection",
+    "totalFiles": "{{count}} files selected"
+  },
+  "createNew": {
+    "confirm": "Create New",
+    "description": {
+      "placeholder": "Document collection description (optional)"
+    },
+    "formTitle": "Basic Information",
+    "name": {
+      "placeholder": "Document collection name",
+      "required": "Please enter the document collection name"
+    },
+    "title": "Create Document Collection"
+  },
+  "tab": {
+    "evals": "Evaluations",
+    "files": "Documents",
+    "settings": "Settings",
+    "testing": "Recall Testing"
+  },
+  "title": "Document Collection"
+}
