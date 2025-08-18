@@ -55,19 +55,38 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Настройка статических файлов
-static_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
-if os.path.exists(static_path):
-    app.mount("/static", StaticFiles(directory=static_path), name="static")
-    print(f"📁 Serving static files from: {static_path}")
-else:
-    print(f"⚠️  Static directory not found at: {static_path}")
+# Настройка статических файлов - более надежный способ
+static_paths = [
+    os.path.join(os.path.dirname(os.path.dirname(__file__)), "static"),  # Относительно backend/
+    os.path.join(os.getcwd(), "static"),  # Относительно рабочего каталога
+    "static"  # Прямой путь
+]
+
+static_path = None
+for path in static_paths:
+    if os.path.exists(path):
+        static_path = os.path.abspath(path)
+        app.mount("/static", StaticFiles(directory=static_path), name="static")
+        print(f"📁 Serving static files from: {static_path}")
+        break
+
+if not static_path:
+    print(f"⚠️  Static directory not found. Searched: {static_paths}")
 
 # Проверяем фронтенд dist 
-frontend_dist_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "dist")
-if os.path.exists(frontend_dist_path):
-    app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist_path, "assets")), name="assets")
-    print(f"📁 Serving frontend assets from: {frontend_dist_path}")
+frontend_dist_paths = [
+    os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "dist"),
+    os.path.join(os.getcwd(), "frontend", "dist"),
+    "frontend/dist"
+]
+
+for frontend_dist_path in frontend_dist_paths:
+    if os.path.exists(frontend_dist_path):
+        assets_path = os.path.join(frontend_dist_path, "assets")
+        if os.path.exists(assets_path):
+            app.mount("/assets", StaticFiles(directory=assets_path), name="assets")
+            print(f"📁 Serving frontend assets from: {frontend_dist_path}")
+        break
 else:
     print(f"⚠️  Frontend dist directory not found at: {frontend_dist_path}")
 
@@ -84,9 +103,9 @@ class ModelToggle(BaseModel):
     enabled: bool
 
 
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 async def health_check():
-    """Проверка состояния API"""
+    """Проверка состояния API (поддерживает GET и HEAD для health checks)"""
     return {
         "status": "healthy", 
         "version": "2.0.0",
@@ -332,37 +351,67 @@ async def delete_history(conversation_id: str):
 @app.get("/app")
 async def serve_chat_ui():
     """Служить основной чат интерфейс"""
-    static_index = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "index.html")
-    if os.path.exists(static_index):
-        return FileResponse(static_index, media_type="text/html")
-    else:
-        return JSONResponse(
-            status_code=404,
-            content={"error": "Chat UI not found. Static files missing."}
-        )
+    # Более надежный способ поиска статических файлов
+    static_paths = [
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "index.html"),  # Относительно backend/
+        os.path.join(os.getcwd(), "static", "index.html"),  # Относительно рабочего каталога
+        "static/index.html",  # Прямой путь
+        os.path.abspath("static/index.html")  # Абсолютный путь
+    ]
+    
+    for static_index in static_paths:
+        if os.path.exists(static_index):
+            return FileResponse(static_index, media_type="text/html")
+    
+    return JSONResponse(
+        status_code=404,
+        content={
+            "error": "Chat UI not found. Static files missing.", 
+            "searched_paths": static_paths,
+            "cwd": os.getcwd()
+        }
+    )
 
 @app.get("/app/{full_path:path}")
 async def serve_frontend_app(full_path: str):
     """Служить фронтенд приложение для всех маршрутов /app/*"""
-    # Сначала пробуем наш простой UI
-    static_index = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "index.html")
-    if os.path.exists(static_index):
-        return FileResponse(static_index, media_type="text/html")
+    # Более надежный поиск статических файлов
+    static_paths = [
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "index.html"),  # Относительно backend/
+        os.path.join(os.getcwd(), "static", "index.html"),  # Относительно рабочего каталога
+        "static/index.html",  # Прямой путь
+        os.path.abspath("static/index.html")  # Абсолютный путь
+    ]
+    
+    for static_index in static_paths:
+        if os.path.exists(static_index):
+            return FileResponse(static_index, media_type="text/html")
     
     # Потом пробуем сложный фронтенд
-    frontend_index = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "dist", "index.html")
-    if os.path.exists(frontend_index):
-        return FileResponse(frontend_index)
-    else:
-        return JSONResponse(
-            status_code=404, 
-            content={"error": "Frontend not built. Using fallback chat interface at /app"}
-        )
+    frontend_paths = [
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "dist", "index.html"),
+        os.path.join(os.getcwd(), "frontend", "dist", "index.html"),
+        "frontend/dist/index.html"
+    ]
+    
+    for frontend_index in frontend_paths:
+        if os.path.exists(frontend_index):
+            return FileResponse(frontend_index)
+    
+    return JSONResponse(
+        status_code=404, 
+        content={
+            "error": "Frontend not built. No UI files found.", 
+            "searched_static": static_paths,
+            "searched_frontend": frontend_paths,
+            "cwd": os.getcwd()
+        }
+    )
 
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 async def root():
-    """Корневой эндпоинт с информацией об API"""
+    """Корневой эндпоинт с информацией об API (поддерживает GET и HEAD для health checks)"""
     return {
         "name": "Multi-Provider AI Chat API",
         "version": "2.0.0",
