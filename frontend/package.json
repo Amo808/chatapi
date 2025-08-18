@@ -31,6 +31,7 @@
   "scripts": {
     "dev": "next dev --turbopack -H 0.0.0.0 -p 3010",
     "build": "cross-env NODE_OPTIONS=--max-old-space-size=6144 next build",
+    "build:export": "cross-env NODE_ENV=production NODE_OPTIONS=--max-old-space-size=6144 next build",
     "start": "next start -H 0.0.0.0 -p 3000",
     "lint": "npm run lint:ts && npm run lint:style && npm run type-check",
     "lint:ts": "eslint \"{src,tests}/**/*.{js,jsx,ts,tsx}\" --fix",

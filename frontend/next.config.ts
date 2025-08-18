@@ -13,7 +13,7 @@ const isUsePglite = process.env.NEXT_PUBLIC_CLIENT_DB === 'pglite';
 // if you need to proxy the api endpoint to remote server
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH;
-const isStandaloneMode = buildWithDocker || isDesktop;
+const isStandaloneMode = buildWithDocker || isDesktop || isProd;  // Добавляем isProd для Render
 
 const standaloneConfig: NextConfig = {
   images: {

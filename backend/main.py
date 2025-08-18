@@ -382,27 +382,8 @@ async def serve_chat_ui():
         if os.path.exists(nextjs_index):
             return FileResponse(nextjs_index, media_type="text/html")
     
-    # Потом ищем статический UI как fallback
-    static_paths = [
-        os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "index.html"),  # Относительно backend/
-        os.path.join(os.getcwd(), "static", "index.html"),  # Относительно рабочего каталога
-        "static/index.html",  # Прямой путь
-        os.path.abspath("static/index.html")  # Абсолютный путь
-    ]
-    
-    for static_index in static_paths:
-        if os.path.exists(static_index):
-            return FileResponse(static_index, media_type="text/html")
-    
-    return JSONResponse(
-        status_code=404,
-        content={
-            "error": "Chat UI not found. Neither Next.js export nor static fallback available.", 
-            "searched_nextjs": nextjs_paths,
-            "searched_static": static_paths,
-            "cwd": os.getcwd()
-        }
-    )
+    # Если нет Next.js экспорта, перенаправляем на /frontend/
+    return RedirectResponse(url="/frontend/")
 
 @app.get("/app/{full_path:path}")
 async def serve_frontend_app(full_path: str):
