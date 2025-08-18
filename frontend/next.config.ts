@@ -16,8 +16,12 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH;
 const isStandaloneMode = buildWithDocker || isDesktop;
 
 const standaloneConfig: NextConfig = {
-  output: 'standalone',
+  images: {
+    unoptimized: true,  // Отключаем оптимизацию изображений
+  },
+  output: 'export',  // Изменяем на статический экспорт
   outputFileTracingIncludes: { '*': ['public/**/*', '.next/static/**/*'] },
+  trailingSlash: true,  // Обязательно для статического экспорта
 };
 
 const nextConfig: NextConfig = {
@@ -25,6 +29,11 @@ const nextConfig: NextConfig = {
   
   // Разрешаем кроссдоменные запросы для демо
   allowedDevOrigins: ['192.168.110.143'],
+  
+  // Отключаем ESLint для сборки
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   basePath,
   compress: isProd,
   

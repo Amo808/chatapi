@@ -73,20 +73,40 @@ for path in static_paths:
 if not static_path:
     print(f"⚠️  Static directory not found. Searched: {static_paths}")
 
-# Проверяем фронтенд dist 
+# Проверяем Next.js статические файлы
+nextjs_static_paths = [
+    os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", ".next", "static"),
+    os.path.join(os.getcwd(), "frontend", ".next", "static"),
+    "frontend/.next/static"
+]
+
+for nextjs_path in nextjs_static_paths:
+    if os.path.exists(nextjs_path):
+        app.mount("/_next/static", StaticFiles(directory=nextjs_path), name="nextjs_static")
+        print(f"📁 Serving Next.js static files from: {nextjs_path}")
+        break
+
+# Проверяем фронтенд из статического экспорта
 frontend_dist_paths = [
-    os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "dist"),
+    os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "out"),  # Next.js export
+    os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "dist"),  # Vite build
+    os.path.join(os.getcwd(), "frontend", "out"),
     os.path.join(os.getcwd(), "frontend", "dist"),
+    "frontend/out",
     "frontend/dist"
 ]
 
+frontend_out_path = None
 for frontend_dist_path in frontend_dist_paths:
     if os.path.exists(frontend_dist_path):
-        assets_path = os.path.join(frontend_dist_path, "assets")
-        if os.path.exists(assets_path):
-            app.mount("/assets", StaticFiles(directory=assets_path), name="assets")
-            print(f"📁 Serving frontend assets from: {frontend_dist_path}")
+        frontend_out_path = frontend_dist_path
+        # Монтируем весь статический контент
+        app.mount("/frontend", StaticFiles(directory=frontend_dist_path, html=True), name="frontend")
+        print(f"📁 Serving frontend from: {frontend_dist_path}")
         break
+
+if not frontend_out_path:
+    print(f"⚠️  Frontend dist directory not found. Searched: {frontend_dist_paths}")
 else:
     print(f"⚠️  Frontend dist directory not found at: {frontend_dist_path}")
 
@@ -351,7 +371,18 @@ async def delete_history(conversation_id: str):
 @app.get("/app")
 async def serve_chat_ui():
     """Служить основной чат интерфейс"""
-    # Более надежный способ поиска статических файлов
+    # Сначала ищем Next.js экспорт
+    nextjs_paths = [
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "out", "index.html"),
+        os.path.join(os.getcwd(), "frontend", "out", "index.html"),
+        "frontend/out/index.html"
+    ]
+    
+    for nextjs_index in nextjs_paths:
+        if os.path.exists(nextjs_index):
+            return FileResponse(nextjs_index, media_type="text/html")
+    
+    # Потом ищем статический UI как fallback
     static_paths = [
         os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "index.html"),  # Относительно backend/
         os.path.join(os.getcwd(), "static", "index.html"),  # Относительно рабочего каталога
@@ -366,8 +397,9 @@ async def serve_chat_ui():
     return JSONResponse(
         status_code=404,
         content={
-            "error": "Chat UI not found. Static files missing.", 
-            "searched_paths": static_paths,
+            "error": "Chat UI not found. Neither Next.js export nor static fallback available.", 
+            "searched_nextjs": nextjs_paths,
+            "searched_static": static_paths,
             "cwd": os.getcwd()
         }
     )
@@ -375,7 +407,18 @@ async def serve_chat_ui():
 @app.get("/app/{full_path:path}")
 async def serve_frontend_app(full_path: str):
     """Служить фронтенд приложение для всех маршрутов /app/*"""
-    # Более надежный поиск статических файлов
+    # Сначала ищем Next.js экспорт
+    nextjs_paths = [
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "out", "index.html"),
+        os.path.join(os.getcwd(), "frontend", "out", "index.html"),
+        "frontend/out/index.html"
+    ]
+    
+    for nextjs_index in nextjs_paths:
+        if os.path.exists(nextjs_index):
+            return FileResponse(nextjs_index, media_type="text/html")
+    
+    # Потом ищем статический UI как fallback
     static_paths = [
         os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "index.html"),  # Относительно backend/
         os.path.join(os.getcwd(), "static", "index.html"),  # Относительно рабочего каталога
@@ -387,23 +430,13 @@ async def serve_frontend_app(full_path: str):
         if os.path.exists(static_index):
             return FileResponse(static_index, media_type="text/html")
     
-    # Потом пробуем сложный фронтенд
-    frontend_paths = [
-        os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "dist", "index.html"),
-        os.path.join(os.getcwd(), "frontend", "dist", "index.html"),
-        "frontend/dist/index.html"
-    ]
-    
-    for frontend_index in frontend_paths:
-        if os.path.exists(frontend_index):
-            return FileResponse(frontend_index)
-    
     return JSONResponse(
         status_code=404, 
         content={
-            "error": "Frontend not built. No UI files found.", 
+            "error": "Frontend not found. No UI available.", 
+            "searched_nextjs": nextjs_paths,
             "searched_static": static_paths,
-            "searched_frontend": frontend_paths,
+            "full_path": full_path,
             "cwd": os.getcwd()
         }
     )
