@@ -1,11 +1,10 @@
-# Render-compatible dependencies (Python 3.13 tested)
-# Updated to fix "not" parameter name error with Python 3.13
+# Python 3.13 compatible without Rust compilation
 fastapi==0.85.1
 uvicorn==0.18.3
 python-multipart==0.0.5
 python-dotenv==1.0.0
-pydantic==1.10.2
+pydantic==1.10.14
 httpx==0.23.3
 aiofiles==22.1.0
-websockets>=9.1
-PyYAML>=5.1
+websockets>=12.0
+PyYAML>=6.0
