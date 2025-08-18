@@ -4,7 +4,8 @@ import asyncio
 from contextlib import asynccontextmanager
 from typing import List, Dict, Any, Optional
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import StreamingResponse, JSONResponse, RedirectResponse
+from fastapi.responses import StreamingResponse, JSONResponse, RedirectResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dataclasses import asdict
@@ -54,6 +55,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Настройка статических файлов для фронтенда
+frontend_dist_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "dist")
+if os.path.exists(frontend_dist_path):
+    app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist_path, "assets")), name="assets")
+    print(f"📁 Serving frontend assets from: {frontend_dist_path}")
+else:
+    print(f"⚠️  Frontend dist directory not found at: {frontend_dist_path}")
 
 
 # Модели Pydantic для новых эндпоинтов
@@ -313,6 +322,19 @@ async def delete_history(conversation_id: str):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@app.get("/app/{full_path:path}")
+async def serve_frontend_app(full_path: str):
+    """Служить фронтенд приложение для всех маршрутов /app/*"""
+    frontend_index = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "dist", "index.html")
+    if os.path.exists(frontend_index):
+        return FileResponse(frontend_index)
+    else:
+        return JSONResponse(
+            status_code=404, 
+            content={"error": "Frontend not built. Run 'npm run build' in frontend directory."}
+        )
+
+
 @app.get("/")
 async def root():
     """Корневой эндпоинт с информацией об API"""
@@ -322,6 +344,10 @@ async def root():
         "description": "Unified API for multiple AI providers with model switching",
         "status": "running",
         "providers": provider_manager.get_available_providers() if provider_manager else [],
+        "frontend": {
+            "app": "/app",
+            "description": "Main chat application interface"
+        },
         "endpoints": {
             "health": "/health",
             "providers": "/providers",
@@ -336,6 +362,19 @@ async def root():
             "redoc": "/redoc"
         }
     }
+
+
+@app.get("/test")
+async def serve_test_page():
+    """Служить тестовую страницу для проверки API"""
+    test_page_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "test-page.html")
+    if os.path.exists(test_page_path):
+        return FileResponse(test_page_path, media_type="text/html")
+    else:
+        return JSONResponse(
+            status_code=404, 
+            content={"error": "Test page not found"}
+        )
 
 
 @app.get("/ui")

@@ -1,24 +1,21 @@
 services:
-  # Backend API Service
+  # Unified Full-Stack Service
   - type: web
-    name: api-chat-backend
+    name: api-chat-system
     runtime: python3
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements-minimal.txt || pip install -r requirements.txt
+      cd frontend
+      npm install
+      npm run build
+    startCommand: python -m uvicorn backend.main:app --host 0.0.0.0 --port $PORT
     plan: free
     env:
+      - key: NODE_ENV
+        value: production
+      - key: OPENAI_API_KEY
+        sync: false
       - key: DEEPSEEK_API_KEY
         sync: false
-    healthCheckPath: /
-
-  # Frontend Web Service  
-  - type: web
-    name: api-chat-frontend
-    runtime: node
-    rootDir: frontend
-    buildCommand: npm install && npm run build
-    startCommand: npm start
-    plan: free
-    env:
-      - key: NEXT_PUBLIC_API_URL
-        value: https://api-chat-backend.onrender.com
+    healthCheckPath: /health
