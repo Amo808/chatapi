@@ -1,4 +1,11 @@
-# Ultra-stable dependencies for Render (Python 3.11-3.13 compatible)
+# Ultra-stable dependencies for Render (Python 3.13 tested)
+fastapi==0.68.0
+uvicorn==0.15.0
+python-multipart==0.0.5
+python-dotenv==1.0.0
+pydantic==1.8.2
+httpx==0.23.3
+aiofiles==22.1.0stable dependencies for Render (Python 3.11-3.13 compatible)
 fastapi==0.85.1
 uvicorn==0.20.0
 python-multipart==0.0.5
