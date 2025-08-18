@@ -22,14 +22,19 @@ Your API is **LIVE with beautiful UI**! Try these endpoints:
 - DeepSeek AI provider loaded and ready
 - Zero errors, perfect startup sequence
 
-### 🔧 **LATEST UPDATE - Enhanced UI Reliability**
-- **Commit bf3338b** (Just deployed): Improved static file serving for Render
+### 🔧 **LATEST UPDATE - Enhanced UI Reliability + LobeChat Integration**
+- **Commit bf3338b**: Improved static file serving for Render
   - Multiple fallback paths for static file discovery
   - Better path resolution for different working directories  
   - Enhanced error messages with debugging info
-  - Should fix any remaining UI loading issues on Render
+- **Commit e5dfdfb** (Latest): Major LobeChat Next.js integration 🎉
+  - Configured Next.js for static export (output: 'export')
+  - Added support for /_next/static mounting for Next.js assets
+  - Backend now prioritizes LobeChat UI over simple static fallback
+  - Full integration of professional React-based chat interface
+  - Should provide full LobeChat experience on Render!
 
-✅ **Frontend UI**: **WORKING!** 🎨
+✅ **Frontend UI**: **ENHANCED WITH LOBECHAT!** 🎨
 - Beautiful chat interface now available at `/app`
 - Custom-built static HTML/CSS/JS solution
 - No more missing frontend dist directory!
