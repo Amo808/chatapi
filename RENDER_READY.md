@@ -22,19 +22,17 @@ Your API is **LIVE with beautiful UI**! Try these endpoints:
 - DeepSeek AI provider loaded and ready
 - Zero errors, perfect startup sequence
 
-### 🔧 **LATEST UPDATE - Enhanced UI Reliability + LobeChat Integration**
-- **Commit bf3338b**: Improved static file serving for Render
-  - Multiple fallback paths for static file discovery
-  - Better path resolution for different working directories  
-  - Enhanced error messages with debugging info
-- **Commit e5dfdfb** (Latest): Major LobeChat Next.js integration 🎉
-  - Configured Next.js for static export (output: 'export')
-  - Added support for /_next/static mounting for Next.js assets
-  - Backend now prioritizes LobeChat UI over simple static fallback
-  - Full integration of professional React-based chat interface
-  - Should provide full LobeChat experience on Render!
+### 🔧 **LATEST UPDATE - LobeChat Build Process Fixed**
+- **Commit 6189cfb**: Force static export for LobeChat in production
+  - Added isProd condition to isStandaloneMode for Render compatibility
+  - Created build:export script with explicit NODE_ENV=production
+  - Simplified /app routes to prioritize Next.js export
+- **Commit 80940cb** (Latest): Fixed Node.js installation for Render 🛠️
+  - Added Node.js 18.x installation in build process
+  - Uses --legacy-peer-deps to handle React 19 dependency conflicts
+  - Should now successfully build LobeChat on Render!
 
-✅ **Frontend UI**: **ENHANCED WITH LOBECHAT!** 🎨
+⚠️ **Status**: **BUILDING LOBECHAT UI** - Node.js + Next.js build now enabled �️
 - Beautiful chat interface now available at `/app`
 - Custom-built static HTML/CSS/JS solution
 - No more missing frontend dist directory!

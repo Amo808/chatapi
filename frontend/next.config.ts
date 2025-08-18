@@ -305,7 +305,7 @@ const noWrapper = (config: NextConfig) => config;
 const withBundleAnalyzer = process.env.ANALYZE === 'true' ? analyzer() : noWrapper;
 
 const withPWA =
-  isProd && !isDesktop
+  false  // Отключаем PWA для ускорения сборки
     ? withSerwistInit({
         register: false,
         swDest: 'public/sw.js',
@@ -313,7 +313,7 @@ const withPWA =
       })
     : noWrapper;
 
-const hasSentry = !!process.env.NEXT_PUBLIC_SENTRY_DSN;
+const hasSentry = false;  // Отключаем Sentry для ускорения сборки
 const withSentry =
   isProd && hasSentry
     ? (c: NextConfig) =>
