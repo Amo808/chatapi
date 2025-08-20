@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест приложения</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #1a1a1a; 
+            color: white; 
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+        }
+        .result { 
+            margin: 10px 0; 
+            padding: 10px; 
+            background: #333; 
+            border-radius: 5px; 
+        }
+        .success { background: #2d5a2d; }
+        .error { background: #5a2d2d; }
+        button { 
+            padding: 10px 20px; 
+            margin: 10px 5px; 
+            background: #4CAF50; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+        }
+        button:hover { background: #45a049; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Тест приложения AI Chat Bot</h1>
+        
+        <h2>1. Проверка браузера</h2>
+        <button onclick="testBrowser()">Проверить браузер</button>
+        <div id="browser-result"></div>
+        
+        <h2>2. Проверка localStorage</h2>
+        <button onclick="testLocalStorage()">Проверить localStorage</button>
+        <div id="storage-result"></div>
+        
+        <h2>3. Очистка данных</h2>
+        <button onclick="clearData()">Очистить все данные</button>
+        <div id="clear-result"></div>
+        
+        <h2>4. Состояние приложения</h2>
+        <div id="app-status">Ожидание проверки...</div>
+    </div>
+
+    <script>
+        function testBrowser() {
+            const result = document.getElementById('browser-result');
+            const features = [];
+            
+            // Проверяем поддержку современных функций
+            if (typeof fetch !== 'undefined') features.push('✅ fetch API');
+            else features.push('❌ fetch API');
+            
+            if (typeof localStorage !== 'undefined') features.push('✅ localStorage');
+            else features.push('❌ localStorage');
+            
+            if (typeof Promise !== 'undefined') features.push('✅ Promises');
+            else features.push('❌ Promises');
+            
+            if (typeof Array.prototype.map !== 'undefined') features.push('✅ Array.map');
+            else features.push('❌ Array.map');
+            
+            result.innerHTML = `<div class="result success">
+                <strong>Поддержка браузера:</strong><br>
+                ${features.join('<br>')}
+            </div>`;
+        }
+        
+        function testLocalStorage() {
+            const result = document.getElementById('storage-result');
+            
+            try {
+                // Проверяем работу localStorage
+                const testKey = 'test-key';
+                const testValue = 'test-value-' + Date.now();
+                
+                localStorage.setItem(testKey, testValue);
+                const retrieved = localStorage.getItem(testKey);
+                localStorage.removeItem(testKey);
+                
+                if (retrieved === testValue) {
+                    // Проверяем данные чатов
+                    const chatsData = localStorage.getItem('ai-chat-bot-chats');
+                    const apiKeysData = localStorage.getItem('ai-chat-bot-api-keys');
+                    
+                    result.innerHTML = `<div class="result success">
+                        <strong>✅ localStorage работает!</strong><br>
+                        Данные чатов: ${chatsData ? 'есть' : 'нет'}<br>
+                        API ключи: ${apiKeysData ? 'есть' : 'нет'}
+                    </div>`;
+                } else {
+                    result.innerHTML = `<div class="result error">❌ localStorage не работает корректно</div>`;
+                }
+            } catch (e) {
+                result.innerHTML = `<div class="result error">❌ Ошибка localStorage: ${e.message}</div>`;
+            }
+        }
+        
+        function clearData() {
+            const result = document.getElementById('clear-result');
+            
+            try {
+                // Очищаем все данные приложения
+                localStorage.removeItem('ai-chat-bot-chats');
+                localStorage.removeItem('ai-chat-bot-api-keys');
+                
+                // Очищаем кэш браузера (если возможно)
+                if ('caches' in window) {
+                    caches.keys().then(function(names) {
+                        for (let name of names) {
+                            caches.delete(name);
+                        }
+                    });
+                }
+                
+                result.innerHTML = `<div class="result success">
+                    ✅ Все данные очищены!<br>
+                    Перезагрузите страницу приложения: <strong>Ctrl+F5</strong>
+                </div>`;
+                
+                updateAppStatus();
+            } catch (e) {
+                result.innerHTML = `<div class="result error">❌ Ошибка очистки: ${e.message}</div>`;
+            }
+        }
+        
+        function updateAppStatus() {
+            const status = document.getElementById('app-status');
+            const chatsData = localStorage.getItem('ai-chat-bot-chats');
+            const apiKeysData = localStorage.getItem('ai-chat-bot-api-keys');
+            
+            status.innerHTML = `
+                <div class="result">
+                    <strong>Текущее состояние:</strong><br>
+                    Чаты: ${chatsData ? '📁 есть данные' : '📂 пусто'}<br>
+                    API ключи: ${apiKeysData ? '🔑 есть ключи' : '🔓 нет ключей'}<br>
+                    Время проверки: ${new Date().toLocaleTimeString()}
+                </div>
+            `;
+        }
+        
+        // Автоматическая проверка при загрузке
+        window.onload = () => {
+            console.log('🧪 Тестовая страница загружена');
+            updateAppStatus();
+            
+            // Проверяем каждые 5 секунд
+            setInterval(updateAppStatus, 5000);
+        };
+    </script>
+</body>
+</html>

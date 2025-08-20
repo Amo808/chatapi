@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Chat</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        button { padding: 10px 20px; margin: 10px 0; cursor: pointer; }
+        .result { margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 5px; }
+        .error { background: #ffcccc; }
+        .success { background: #ccffcc; }
+        .info { background: #ccccff; }
+        pre { overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug Chat Bot</h1>
+        
+        <h2>1. Проверка localStorage</h2>
+        <button onclick="checkLocalStorage()">Проверить localStorage</button>
+        <div id="localStorage-result"></div>
+        
+        <h2>2. Проверка API ключей</h2>
+        <button onclick="checkApiKeys()">Проверить API ключи</button>
+        <div id="apikeys-result"></div>
+        
+        <h2>3. Тест API напрямую</h2>
+        <button onclick="testApiDirect()">Тест DeepSeek API</button>
+        <div id="api-result"></div>
+        
+        <h2>4. Проверка состояния приложения</h2>
+        <button onclick="checkAppState()">Проверить состояние</button>
+        <div id="state-result"></div>
+        
+        <h2>5. Исправить все проблемы</h2>
+        <button onclick="fixAllIssues()">🔧 Исправить все</button>
+        <div id="fix-result"></div>
+    </div>
+
+    <script>
+        function checkLocalStorage() {
+            const result = document.getElementById('localStorage-result');
+            try {
+                const keys = Object.keys(localStorage);
+                let html = '<div class="result info"><h3>localStorage содержит:</h3><ul>';
+                keys.forEach(key => {
+                    const value = localStorage.getItem(key);
+                    html += `<li><strong>${key}:</strong> ${value?.substring(0, 100)}${value?.length > 100 ? '...' : ''}</li>`;
+                });
+                html += '</ul></div>';
+                result.innerHTML = html;
+            } catch (e) {
+                result.innerHTML = `<div class="result error">Ошибка: ${e.message}</div>`;
+            }
+        }
+        
+        function checkApiKeys() {
+            const result = document.getElementById('apikeys-result');
+            try {
+                const apiKeys = localStorage.getItem('ai-chat-bot-api-keys');
+                if (apiKeys) {
+                    const parsed = JSON.parse(apiKeys);
+                    let html = '<div class="result success"><h3>API ключи найдены:</h3><ul>';
+                    Object.entries(parsed).forEach(([model, key]) => {
+                        html += `<li><strong>${model}:</strong> ${key.substring(0, 10)}...${key.substring(key.length - 4)}</li>`;
+                    });
+                    html += '</ul></div>';
+                    result.innerHTML = html;
+                } else {
+                    result.innerHTML = '<div class="result error">API ключи не найдены!</div>';
+                }
+            } catch (e) {
+                result.innerHTML = `<div class="result error">Ошибка: ${e.message}</div>`;
+            }
+        }
+        
+        async function testApiDirect() {
+            const result = document.getElementById('api-result');
+            result.innerHTML = '<div class="result info">Тестирую API...</div>';
+            
+            try {
+                const apiKey = 'sk-f8c6a93eb5394fbe8ea02405d2f45297';
+                const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: 'deepseek-chat',
+                        messages: [{role: 'user', content: 'Привет! Ответь одним словом: работаешь?'}],
+                        max_tokens: 100,
+                        temperature: 0.7
+                    })
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    const reply = data.choices?.[0]?.message?.content || 'Нет ответа';
+                    result.innerHTML = `<div class="result success"><h3>API работает!</h3><p>Ответ: ${reply}</p></div>`;
+                } else {
+                    result.innerHTML = `<div class="result error"><h3>Ошибка API:</h3><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+                }
+            } catch (e) {
+                result.innerHTML = `<div class="result error">Ошибка: ${e.message}</div>`;
+            }
+        }
+        
+        function checkAppState() {
+            const result = document.getElementById('state-result');
+            try {
+                const chats = localStorage.getItem('ai-chat-bot-chats');
+                if (chats) {
+                    const parsed = JSON.parse(chats);
+                    let html = '<div class="result info"><h3>Состояние чатов:</h3>';
+                    html += `<p>Количество чатов: ${parsed.length}</p>`;
+                    if (parsed.length > 0) {
+                        html += '<ul>';
+                        parsed.forEach(chat => {
+                            html += `<li>Чат: ${chat.title} (${chat.messages?.length || 0} сообщений, модель: ${chat.model || 'не указана'})</li>`;
+                        });
+                        html += '</ul>';
+                    }
+                    html += '</div>';
+                    result.innerHTML = html;
+                } else {
+                    result.innerHTML = '<div class="result error">Чаты не найдены!</div>';
+                }
+            } catch (e) {
+                result.innerHTML = `<div class="result error">Ошибка: ${e.message}</div>`;
+            }
+        }
+        
+        function fixAllIssues() {
+            const result = document.getElementById('fix-result');
+            let fixes = [];
+            
+            try {
+                // 1. Установка API ключа
+                const apiKeys = { 'deepseek-chat': 'sk-f8c6a93eb5394fbe8ea02405d2f45297' };
+                localStorage.setItem('ai-chat-bot-api-keys', JSON.stringify(apiKeys));
+                fixes.push('✅ API ключ DeepSeek установлен');
+                
+                // 2. Очистка старых данных
+                const chats = localStorage.getItem('ai-chat-bot-chats');
+                if (chats) {
+                    try {
+                        const parsed = JSON.parse(chats);
+                        const fixed = parsed.map(chat => ({
+                            ...chat,
+                            model: chat.model || 'deepseek-chat'
+                        }));
+                        localStorage.setItem('ai-chat-bot-chats', JSON.stringify(fixed));
+                        fixes.push('✅ Модели в чатах исправлены');
+                    } catch (e) {
+                        fixes.push('⚠️ Не удалось исправить чаты: ' + e.message);
+                    }
+                }
+                
+                // 3. Проверка
+                const verify = localStorage.getItem('ai-chat-bot-api-keys');
+                if (verify && JSON.parse(verify)['deepseek-chat']) {
+                    fixes.push('✅ Проверка: API ключ сохранен корректно');
+                }
+                
+                result.innerHTML = `<div class="result success"><h3>Исправления применены:</h3><ul>${fixes.map(f => '<li>' + f + '</li>').join('')}</ul><p><strong>Перезагрузите основное приложение!</strong></p></div>`;
+            } catch (e) {
+                result.innerHTML = `<div class="result error">Ошибка исправления: ${e.message}</div>`;
+            }
+        }
+        
+        // Автоматическая проверка при загрузке
+        window.onload = () => {
+            console.log('Debug page loaded');
+        };
+    </script>
+</body>
+</html>

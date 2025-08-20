@@ -14,16 +14,45 @@
 }
 
 @layer components {
+  /* Улучшенная типографика */
+  .typography-h1 {
+    @apply text-3xl font-bold text-text leading-tight;
+  }
+  
+  .typography-h2 {
+    @apply text-2xl font-bold text-text leading-tight mb-3;
+  }
+  
+  .typography-h3 {
+    @apply text-xl font-semibold text-text leading-snug mb-2;
+  }
+  
+  .typography-h4 {
+    @apply text-lg font-semibold text-text leading-snug mb-2;
+  }
+  
+  .typography-body {
+    @apply text-base text-text leading-relaxed;
+  }
+  
+  .typography-small {
+    @apply text-sm text-muted leading-normal;
+  }
+  
+  .typography-caption {
+    @apply text-xs text-muted leading-normal;
+  }
+
   .chat-bubble {
     @apply max-w-[80%] rounded-xl px-4 py-3 shadow-sm;
   }
   
   .chat-bubble-user {
-    @apply bg-accent text-white ml-auto;
+    @apply bg-accent text-white ml-auto typography-body;
   }
   
   .chat-bubble-assistant {
-    @apply bg-surface text-text;
+    @apply bg-surface text-text typography-body;
   }
   
   .sidebar-item {
@@ -45,6 +74,86 @@
   .input-field {
     @apply bg-surface border border-divider rounded-lg px-4 py-3 text-text placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent;
   }
+
+  /* Анимации для рулетки моделей */
+  .model-roulette {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .model-roulette:hover {
+    @apply transform scale-[1.02] shadow-lg;
+  }
+
+  .model-item {
+    @apply transition-all duration-200 ease-in-out;
+  }
+
+  .model-item:nth-child(even) {
+    @apply bg-surface/50;
+  }
+
+  .model-item:nth-child(odd) {
+    @apply bg-surface;
+  }
+
+  .model-item:hover {
+    @apply bg-blue-500/10 transform translate-x-1;
+  }
+
+  .model-item.selected {
+    @apply bg-blue-500/10 border-l-4 border-l-blue-500 shadow-inner;
+  }
+
+  /* Анимации для выпадающего меню */
+  .dropdown-menu {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  .dropdown-menu.closing {
+    animation: slideDown 0.2s ease-in;
+  }
+
+  /* Анимации для кнопок фильтров */
+  .filter-button {
+    @apply transition-all duration-200 ease-in-out;
+  }
+
+  .filter-button:hover {
+    @apply transform scale-105 shadow-md;
+  }
+
+  .filter-button.active {
+    @apply transform scale-110 shadow-lg;
+  }
+
+  /* Анимации для поиска */
+  .search-input {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  .search-input:focus {
+    @apply transform scale-[1.02] shadow-lg;
+  }
+
+  /* Анимации для иконок */
+  .model-icon {
+    @apply transition-all duration-200 ease-in-out;
+  }
+
+  .model-icon:hover {
+    @apply transform rotate-12 scale-110;
+  }
+
+  /* Анимации для звездочки выбора */
+  .selection-star {
+    animation: starPulse 2s ease-in-out infinite;
+  }
+
+  /* Анимации для градиентов */
+  .gradient-bg {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
+    animation: gradientShift 4s ease-in-out infinite;
+  }
 }
 
 /* Custom scrollbar */
@@ -63,3 +172,71 @@
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-accent-dark;
 }
+
+/* Keyframes для анимаций */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+}
+
+@keyframes starPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Анимации для рулетки */
+@keyframes rouletteSpin {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.roulette-item {
+  animation: rouletteSpin 0.6s ease-in-out;
+}
+
+.roulette-item:nth-child(1) { animation-delay: 0s; }
+.roulette-item:nth-child(2) { animation-delay: 0.1s; }
+.roulette-item:nth-child(3) { animation-delay: 0.2s; }
+.roulette-item:nth-child(4) { animation-delay: 0.3s; }
+.roulette-item:nth-child(5) { animation-delay: 0.4s; }
+.roulette-item:nth-child(6) { animation-delay: 0.5s; }
+.roulette-item:nth-child(7) { animation-delay: 0.6s; }

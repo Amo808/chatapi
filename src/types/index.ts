@@ -1,15 +1,17 @@
 export interface Message {
   id: string;
-  role: 'user' | 'assistant' | 'system';
+  role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  chatId: string;
   meta?: {
-    model?: string;
     usage?: {
-      prompt_tokens: number;
-      completion_tokens: number;
+      prompt_tokens?: number;
+      completion_tokens?: number;
       total_tokens: number;
     };
+    model?: string;
+    finish_reason?: string;
   };
 }
 
@@ -20,28 +22,28 @@ export interface Chat {
   createdAt: Date;
   updatedAt: Date;
   isPinned: boolean;
-  systemPrompt?: string;
-  model?: string;
+  model: string;
 }
 
 export interface ChatState {
   chats: Chat[];
   currentChatId: string | null;
-  isLoading: boolean;
-  error: string | null;
 }
 
-export interface ChatContextType {
-  state: ChatState;
-  createChat: () => void;
-  deleteChat: (chatId: string) => void;
-  updateChat: (chatId: string, updates: Partial<Chat>) => void;
-  setCurrentChat: (chatId: string) => void;
-  addMessage: (chatId: string, message: Omit<Message, 'id' | 'timestamp'>) => void;
-  updateMessage: (chatId: string, messageId: string, updates: Partial<Message>) => void;
-  exportChats: () => void;
-  importChats: (chats: Chat[]) => void;
-  clearError: () => void;
+export type ChatAction =
+  | { type: 'CREATE_CHAT' }
+  | { type: 'DELETE_CHAT'; payload: string }
+  | { type: 'SET_CURRENT_CHAT'; payload: string }
+  | { type: 'ADD_MESSAGE'; payload: { chatId: string; message: Message } }
+  | { type: 'UPDATE_CHAT'; payload: { chatId: string; updates: Partial<Chat> } }
+  | { type: 'TOGGLE_PIN_CHAT'; payload: { chatId: string } }
+  | { type: 'LOAD_CHATS'; payload: Chat[] };
+
+export interface ApiRequest {
+  chatId: string;
+  messages: { role: string; content: string }[];
+  model: string;
+  stream: boolean;
 }
 
 export interface ApiResponse {
@@ -50,19 +52,44 @@ export interface ApiResponse {
   meta?: any;
 }
 
-export interface ApiRequest {
-  chatId: string;
-  messages: Array<{
-    role: 'user' | 'assistant' | 'system';
-    content: string;
-    id?: string;
-  }>;
-  model?: string;
-  stream?: boolean;
+// New interfaces for LLM models
+export interface LLMModel {
+  id: string;
+  name: string;
+  displayName: string;
+  provider: LLMProvider;
+  contextLength: number;
+  maxTokens: number;
+  isAvailable: boolean;
+  pricing?: {
+    input: number; // цена за 1K токенов ввода
+    output: number; // цена за 1K токенов вывода
+  };
+  apiKey?: string; // API ключ для модели
+  hasApiKey?: boolean; // есть ли подключенный API ключ
 }
 
-export interface StreamingChunk {
-  type: 'delta' | 'done';
-  delta?: string;
-  meta?: any;
+export interface LLMProvider {
+  id: string;
+  name: string;
+  displayName: string;
+  icon: string;
+  color: string;
+  isAvailable: boolean;
+}
+
+export interface ModelSelectorProps {
+  selectedModel: string;
+  onModelChange: (modelId: string) => void;
+  className?: string;
+}
+
+// Новые типы для управления API ключами
+export type ApiKeyAction =
+  | { type: 'SET_API_KEY'; payload: { modelId: string; apiKey: string } }
+  | { type: 'REMOVE_API_KEY'; payload: string }
+  | { type: 'LOAD_API_KEYS' };
+
+export interface ApiKeyState {
+  apiKeys: Record<string, string>; // modelId -> apiKey
 }

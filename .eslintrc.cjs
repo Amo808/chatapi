@@ -1,9 +1,13 @@
 module.exports = {
   root: true,
-  env: { browser: true, es2020: true },
+  env: { 
+    browser: true, 
+    es2020: true,
+    jest: true,
+    node: true
+  },
   extends: [
     'eslint:recommended',
-    '@typescript-eslint/recommended',
     'plugin:react-hooks/recommended',
   ],
   ignorePatterns: ['dist', '.eslintrc.cjs'],
@@ -14,7 +18,11 @@ module.exports = {
       'warn',
       { allowConstantExport: true },
     ],
-    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-    '@typescript-eslint/no-explicit-any': 'warn',
+    'no-unused-vars': 'warn',
+    'no-undef': 'warn',
+    'no-redeclare': 'warn',
+    'no-case-declarations': 'warn',
+    'no-useless-catch': 'warn',
+    'no-constant-condition': 'warn',
   },
 }

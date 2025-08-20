@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Streaming API</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        button { padding: 10px 20px; margin: 10px 0; cursor: pointer; }
+        .result { margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 5px; }
+        .error { background: #ffcccc; }
+        .success { background: #ccffcc; }
+        .info { background: #ccccff; }
+        pre { overflow-x: auto; }
+        .streaming { background: #ffffcc; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Тест потоковой передачи DeepSeek API</h1>
+        
+        <h2>1. Тест стриминга</h2>
+        <button onclick="testStreaming()">Тест потоковой передачи</button>
+        <div id="streaming-result"></div>
+        
+        <h2>2. Тест обычного API</h2>
+        <button onclick="testRegular()">Тест обычного API</button>
+        <div id="regular-result"></div>
+        
+        <h2>3. Проверка API ключа</h2>
+        <button onclick="checkApiKey()">Проверить ключ</button>
+        <div id="key-result"></div>
+    </div>
+
+    <script>
+        const API_KEY = 'sk-f8c6a93eb5394fbe8ea02405d2f45297';
+        
+        async function testStreaming() {
+            const result = document.getElementById('streaming-result');
+            result.innerHTML = '<div class="result info">Тестирую потоковую передачу...</div>';
+            
+            try {
+                const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: 'deepseek-chat',
+                        messages: [{role: 'user', content: 'Привет! Расскажи коротко о себе.'}],
+                        max_tokens: 200,
+                        temperature: 0.7,
+                        stream: true
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let fullResponse = '';
+                let chunks = [];
+                
+                result.innerHTML = '<div class="result streaming">Получаю потоковые данные...</div>';
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    const chunk = decoder.decode(value);
+                    chunks.push(chunk);
+                    
+                    const lines = chunk.split('\n');
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const data = line.slice(6);
+                            if (data === '[DONE]') continue;
+                            
+                            try {
+                                const parsed = JSON.parse(data);
+                                const content = parsed.choices?.[0]?.delta?.content;
+                                if (content) {
+                                    fullResponse += content;
+                                    result.innerHTML = `<div class="result streaming"><strong>Потоковая передача:</strong><br>${fullResponse}</div>`;
+                                }
+                            } catch (e) {
+                                // Игнорируем ошибки парсинга
+                            }
+                        }
+                    }
+                }
+                
+                result.innerHTML = `<div class="result success"><strong>✅ Потоковая передача завершена!</strong><br><br><strong>Полный ответ:</strong><br>${fullResponse}</div>`;
+                
+            } catch (e) {
+                result.innerHTML = `<div class="result error">❌ Ошибка: ${e.message}</div>`;
+            }
+        }
+        
+        async function testRegular() {
+            const result = document.getElementById('regular-result');
+            result.innerHTML = '<div class="result info">Тестирую обычный API...</div>';
+            
+            try {
+                const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: 'deepseek-chat',
+                        messages: [{role: 'user', content: 'Привет! Ответь одним словом: работаешь?'}],
+                        max_tokens: 50,
+                        temperature: 0.7,
+                        stream: false
+                    })
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    const reply = data.choices?.[0]?.message?.content || 'Нет ответа';
+                    result.innerHTML = `<div class="result success"><strong>✅ Обычный API работает!</strong><br>Ответ: ${reply}</div>`;
+                } else {
+                    result.innerHTML = `<div class="result error"><strong>❌ Ошибка API:</strong><br><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+                }
+            } catch (e) {
+                result.innerHTML = `<div class="result error">❌ Ошибка: ${e.message}</div>`;
+            }
+        }
+        
+        function checkApiKey() {
+            const result = document.getElementById('key-result');
+            if (API_KEY && API_KEY.startsWith('sk-')) {
+                result.innerHTML = `<div class="result success">✅ API ключ найден: ${API_KEY.substring(0, 10)}...${API_KEY.substring(API_KEY.length - 4)}</div>`;
+            } else {
+                result.innerHTML = '<div class="result error">❌ API ключ не найден!</div>';
+            }
+        }
+        
+        // Автоматическая проверка при загрузке
+        window.onload = () => {
+            console.log('Test page loaded');
+            checkApiKey();
+        };
+    </script>
+</body>
+</html>

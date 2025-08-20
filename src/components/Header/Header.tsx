@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useChat } from '../../context/ChatProvider';
+import { useChat } from '../../hooks/useChatContext';
 
 interface HeaderProps {
   onToggleSidebar: () => void;
@@ -51,7 +51,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
           
           {state.currentChatId && (
             <span className="text-sm text-muted">
-              {state.chats.find(chat => chat.id === state.currentChatId)?.title}
+              {state.chats.find((chat: any) => chat.id === state.currentChatId)?.title}
             </span>
           )}
         </div>

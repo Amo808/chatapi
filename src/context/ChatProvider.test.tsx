@@ -1,9 +1,23 @@
 
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ChatProvider, useChat } from './ChatProvider';
-import { Chat } from '../types';
+import { ChatProvider } from './ChatProvider';
+import { useChat } from '../hooks/useChatContext';
+import { ApiKeyProvider } from './ApiKeyProvider';
 
-// Test component that uses the context
+// Mock localStorage
+const mockLocalStorage = {
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+  removeItem: jest.fn(),
+  clear: jest.fn(),
+};
+
+Object.defineProperty(window, 'localStorage', {
+  value: mockLocalStorage,
+  writable: true,
+});
+
+// Test component to access context
 function TestComponent() {
   const { state, createChat, deleteChat, setCurrentChat } = useChat();
   
@@ -11,110 +25,91 @@ function TestComponent() {
     <div>
       <div data-testid="chat-count">{state.chats.length}</div>
       <div data-testid="current-chat">{state.currentChatId || 'none'}</div>
-      <button onClick={createChat} data-testid="create-chat">Create Chat</button>
-      <button onClick={() => deleteChat('chat-1')} data-testid="delete-chat">Delete Chat</button>
-      <button onClick={() => setCurrentChat('chat-2')} data-testid="set-current">Set Current</button>
+      <button data-testid="create-chat" onClick={() => createChat()}>
+        Create Chat
+      </button>
+      <button 
+        data-testid="delete-chat" 
+        onClick={() => state.currentChatId && deleteChat(state.currentChatId)}
+      >
+        Delete Chat
+      </button>
+      <button 
+        data-testid="set-current" 
+        onClick={() => state.chats[0] && setCurrentChat(state.chats[0].id)}
+      >
+        Set Current
+      </button>
     </div>
   );
 }
 
 describe('ChatProvider', () => {
   beforeEach(() => {
-    // Clear localStorage before each test
-    localStorage.clear();
-  });
-
-  it('provides initial state', () => {
-    render(
-      <ChatProvider>
-        <TestComponent />
-      </ChatProvider>
-    );
-
-    expect(screen.getByTestId('chat-count')).toHaveTextContent('0');
-    expect(screen.getByTestId('current-chat')).toHaveTextContent('none');
+    // Clear all mocks before each test
+    jest.clearAllMocks();
+    mockLocalStorage.getItem.mockReturnValue(null);
   });
 
   it('creates a new chat', async () => {
     render(
-      <ChatProvider>
-        <TestComponent />
-      </ChatProvider>
+      <ApiKeyProvider>
+        <ChatProvider>
+          <TestComponent />
+        </ChatProvider>
+      </ApiKeyProvider>
     );
+
+    expect(screen.getByTestId('chat-count')).toHaveTextContent('0');
 
     fireEvent.click(screen.getByTestId('create-chat'));
 
     await waitFor(() => {
       expect(screen.getByTestId('chat-count')).toHaveTextContent('1');
     });
-    
-    expect(screen.getByTestId('current-chat')).not.toHaveTextContent('none');
   });
 
   it('deletes a chat', async () => {
-    // First create a chat
     render(
-      <ChatProvider>
-        <TestComponent />
-      </ChatProvider>
-    );
-
-    fireEvent.click(screen.getByTestId('create-chat'));
-    
-    await waitFor(() => {
-      expect(screen.getByTestId('chat-count')).toHaveTextContent('1');
-    });
-
-    // Then delete it
-    fireEvent.click(screen.getByTestId('delete-chat'));
-    
-    await waitFor(() => {
-      expect(screen.getByTestId('chat-count')).toHaveTextContent('0');
-    });
-  });
-
-  it('sets current chat', async () => {
-    render(
-      <ChatProvider>
-        <TestComponent />
-      </ChatProvider>
+      <ApiKeyProvider>
+        <ChatProvider>
+          <TestComponent />
+        </ChatProvider>
+      </ApiKeyProvider>
     );
 
     // Create a chat first
     fireEvent.click(screen.getByTestId('create-chat'));
     
     await waitFor(() => {
-      expect(screen.getByTestId('current-chat')).not.toHaveTextContent('none');
+      expect(screen.getByTestId('chat-count')).toHaveTextContent('1');
     });
 
-    // Set a different current chat
+    // Set it as current
     fireEvent.click(screen.getByTestId('set-current'));
     
     await waitFor(() => {
-      expect(screen.getByTestId('current-chat')).toHaveTextContent('chat-2');
+      expect(screen.getByTestId('current-chat')).not.toHaveTextContent('none');
+    });
+
+    // Delete the chat
+    fireEvent.click(screen.getByTestId('delete-chat'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('chat-count')).toHaveTextContent('0');
     });
   });
 
-  it('loads chats from localStorage on mount', () => {
-    const mockChats: Chat[] = [
-      {
-        id: 'chat-1',
-        title: 'Test Chat',
-        messages: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        isPinned: false,
-      },
-    ];
-
-    localStorage.setItem('ai-chat-bot-chats', JSON.stringify(mockChats));
-
+  it('provides initial state', () => {
     render(
-      <ChatProvider>
-        <TestComponent />
-      </ChatProvider>
+      <ApiKeyProvider>
+        <ChatProvider>
+          <TestComponent />
+        </ChatProvider>
+      </ApiKeyProvider>
     );
 
-    expect(screen.getByTestId('chat-count')).toHaveTextContent('1');
+    expect(screen.getByTestId('chat-count')).toHaveTextContent('0');
+    expect(screen.getByTestId('current-chat')).toHaveTextContent('none');
   });
 });

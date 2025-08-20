@@ -1,6 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useChatApi } from '../../hooks/useChat';
-import { useChat } from '../../context/ChatProvider';
+import { useSimpleChat } from '../../hooks/useSimpleChat';
+import { useChat } from '../../hooks/useChatContext';
+import { ModelSelector } from '../ModelSelector';
+import { getModelDescription } from '../../lib/models';
 
 interface ComposerProps {
   chatId: string;
@@ -10,8 +13,9 @@ export function Composer({ chatId }: ComposerProps) {
   const [message, setMessage] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { sendMessage } = useChatApi();
-  const { state } = useChat();
+  const { sendMessage: sendMessageApi, error, clearError } = useChatApi();
+  const { sendMessage: sendMessageSimple, isLoading, streamingMessageId } = useSimpleChat();
+  const { state, updateChat } = useChat();
 
   const currentChat = state.chats.find(chat => chat.id === chatId);
 
@@ -26,12 +30,26 @@ export function Composer({ chatId }: ComposerProps) {
     e.preventDefault();
     if (!message.trim() || !currentChat) return;
 
+    console.log('📝 Composer: handleSubmit called with message:', message);
+    console.log('📝 Composer: currentChat:', currentChat);
+    console.log('📝 Composer: chatId:', chatId);
+
     setIsStreaming(true);
     try {
-      await sendMessage(message, chatId, true); // Используем стриминг по умолчанию
+      console.log('📝 Composer: Using simple chat for DeepSeek');
+      
+      // Используем простую версию для DeepSeek
+      if (currentChat?.model === 'deepseek-chat' || !currentChat?.model) {
+        await sendMessageSimple(chatId, message);
+      } else {
+        // Для других моделей используем обычный API
+        await sendMessageApi(chatId, message, true);
+      }
+      
+      console.log('📝 Composer: sendMessage completed successfully');
       setMessage('');
     } catch (error) {
-      console.error('Failed to send message:', error);
+      console.error('❌ Composer: Failed to send message:', error);
     } finally {
       setIsStreaming(false);
     }
@@ -52,8 +70,39 @@ export function Composer({ chatId }: ComposerProps) {
     }
   };
 
+  const handleModelChange = (modelId: string) => {
+    if (currentChat) {
+      updateChat(chatId, { model: modelId });
+    }
+  };
+
   return (
     <div className="border-t border-divider bg-surface p-4">
+      {/* Статус загрузки */}
+      {(isLoading || streamingMessageId) && (
+        <div className="mb-2 flex items-center gap-2 text-sm text-muted animate-pulse">
+          <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+          <span>DeepSeek думает...</span>
+        </div>
+      )}
+      
+      {/* Выбор модели */}
+      <div className="mb-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted">Модель:</span>
+          <ModelSelector
+            selectedModel={currentChat?.model || 'deepseek-chat'}
+            onModelChange={handleModelChange}
+          />
+        </div>
+        
+        {currentChat?.model && (
+          <div className="text-xs text-muted">
+            {getModelDescription(currentChat.model)}
+          </div>
+        )}
+      </div>
+
       <form onSubmit={handleSubmit} className="flex items-end gap-3">
         <div className="flex-1 relative">
           <textarea
@@ -86,10 +135,10 @@ export function Composer({ chatId }: ComposerProps) {
           
           <button
             type="submit"
-            disabled={!message.trim() || isStreaming}
+            disabled={!message.trim() || isStreaming || isLoading || !!streamingMessageId}
             className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isStreaming ? 'Отправка...' : 'Отправить'}
+            {(isStreaming || isLoading || streamingMessageId) ? 'Отправка...' : 'Отправить'}
           </button>
         </div>
       </form>
@@ -97,6 +146,21 @@ export function Composer({ chatId }: ComposerProps) {
       <div className="text-xs text-muted mt-2 text-center">
         Ctrl+Enter для отправки • Shift+Enter для новой строки
       </div>
+      
+      {/* Отображение ошибок */}
+      {error && (
+        <div className="mt-3 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+          <div className="flex items-center justify-between">
+            <span className="text-red-500 text-sm">{error}</span>
+            <button
+              onClick={clearError}
+              className="text-red-500 hover:text-red-600 text-sm"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

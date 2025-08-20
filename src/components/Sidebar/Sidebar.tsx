@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { useChat } from '../../context/ChatProvider';
+import { useChat } from '../../hooks/useChatContext';
 import { Chat } from '../../types';
+import { getModelIcon, getModelDisplayName } from '../../lib/models';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -36,8 +37,12 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     }
   };
 
-  // Utility function to format date
-  const formatDate = (date: Date): string => {
+  // Utility function to format date (robust to strings)
+  const formatDate = (input: Date | string): string => {
+    const date = input instanceof Date ? input : new Date(input);
+    if (isNaN(date.getTime())) {
+      return '';
+    }
     const now = new Date();
     const diff = now.getTime() - date.getTime();
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -76,7 +81,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           {/* Заголовок */}
           <div className="p-4 border-b border-divider">
             <div className="flex items-center justify-between">
-              <h1 className="text-xl font-bold text-text">AI Chat Bot</h1>
+              <h1 className="typography-h1">AI Chat Bot</h1>
               <button
                 onClick={onClose}
                 className="lg:hidden p-2 hover:bg-accent-dark/20 rounded-lg"
@@ -99,7 +104,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           {/* Закрепленные чаты */}
           {pinnedChats.length > 0 && (
             <div className="px-4 mb-4">
-              <h3 className="text-sm font-medium text-muted mb-2">Закрепленные</h3>
+              <h3 className="typography-h4 text-muted">Закрепленные</h3>
               <div className="space-y-1">
                 {pinnedChats.map(chat => (
                   <ChatListItem
@@ -118,7 +123,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
           {/* Обычные чаты */}
           <div className="flex-1 px-4 overflow-y-auto">
-            <h3 className="text-sm font-medium text-muted mb-2">Недавние чаты</h3>
+            <h3 className="typography-h4 text-muted">Недавние чаты</h3>
             <div className="space-y-1">
               {regularChats.map(chat => (
                 <ChatListItem
@@ -219,8 +224,14 @@ function ChatListItem({ chat, isActive, onSelect, onDelete, onTogglePin, formatD
         <div className="text-xs text-muted truncate">
           {preview}
         </div>
-        <div className="text-xs text-muted">
-          {formatDate(chat.updatedAt)}
+        <div className="flex items-center justify-between text-xs text-muted">
+          <span>{formatDate(chat.updatedAt)}</span>
+          {chat.model && (
+            <div className="flex items-center gap-1">
+              <span>{getModelIcon(chat.model)}</span>
+              <span className="truncate max-w-20">{getModelDisplayName(chat.model)}</span>
+            </div>
+          )}
         </div>
       </button>
 
